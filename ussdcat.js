@@ -7,28 +7,30 @@ const PORT = 5000;
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.post('/ussd', (req, res) => {
-    const { text } = req.body;
+    const { sessionId, serviceCode, phoneNumber, text } = req.body;
 
     let response = '';
-    let textArray = text.split('*').filter(x => x !== '');
 
-    // Handle '0' to go back one level
-    if (textArray.length > 0 && textArray[textArray.length - 1] === '0') {
-        textArray = textArray.slice(0, -2); // Remove '0' and last valid input
+    // Split text input by * to detect current menu path
+    let textArray = text.trim().split('*').filter(x => x !== '');
+
+    // Handle '0' to go back one step
+    if (textArray[textArray.length - 1] === '0') {
+        textArray = textArray.slice(0, -2); // remove '0' and previous entry
     }
 
     const level = textArray.length;
-    const language = textArray[0]; // '1' = English, '2' = Kinyarwanda
-    const choice = textArray[1];   // food selection
+    const language = textArray[0]; // 1 = English, 2 = Kinyarwanda
+    const choice = textArray[1];
 
-    // Level 0: Language selection
+    // Menu Level 0: Language selection
     if (level === 0) {
         response = `CON Welcome to favourite food app, please choose language:
 1. English
 2. Kinyarwanda`;
     }
 
-    // Level 1: Food menu (depends on language)
+    // Menu Level 1: Food menu based on language
     else if (level === 1) {
         if (language === '1') {
             response = `CON Select the dish you like most:
@@ -49,7 +51,7 @@ app.post('/ussd', (req, res) => {
         }
     }
 
-    // Level 2: Feedback on food choice
+    // Menu Level 2: Food feedback based on choice and language
     else if (level === 2) {
         if (language === '1') {
             switch (choice) {
@@ -100,7 +102,7 @@ app.post('/ussd', (req, res) => {
         }
     }
 
-    // All other cases
+    // Any unexpected case
     else {
         response = 'END Invalid input.';
     }
