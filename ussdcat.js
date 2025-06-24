@@ -112,4 +112,3 @@ app.post('/ussd', (req, res) => {
 app.listen(PORT, () => {
     console.log(`✅ USSD app running on port ${PORT}`);
 });
-``
